@@ -1,0 +1,226 @@
+From d46c1cd2f8b39e26e3c2dd5e6c1bde961b36c575 Mon Sep 17 00:00:00 2001
+From: Gunes Acar <gunes.acar@esat.kuleuven.be>
+Date: Fri, 18 Apr 2014 05:11:23 +0200
+Subject: [PATCH] Added fingerprinting tests
+
+---
+ TBBTestSuite/Tests.pm                       |   24 +++++++++
+ selenium-tests/test_fp_navigator.py         |   76 +++++++++++++++++++++++++++
+ selenium-tests/test_fp_plugins.py           |   11 ++++
+ selenium-tests/test_fp_screen_coords.py     |   21 ++++++++
+ selenium-tests/test_fp_screen_dimensions.py |   18 +++++++
+ selenium-tests/test_fp_useragent.py         |   12 +++++
+ 6 files changed, 162 insertions(+)
+ create mode 100644 selenium-tests/test_fp_navigator.py
+ create mode 100644 selenium-tests/test_fp_plugins.py
+ create mode 100644 selenium-tests/test_fp_screen_coords.py
+ create mode 100644 selenium-tests/test_fp_screen_dimensions.py
+ create mode 100644 selenium-tests/test_fp_useragent.py
+
+diff --git a/TBBTestSuite/Tests.pm b/TBBTestSuite/Tests.pm
+index 75a8a63..36ac02b 100644
+--- a/TBBTestSuite/Tests.pm
++++ b/TBBTestSuite/Tests.pm
+@@ -66,6 +66,30 @@ our @tests = (
+         type  => 'mozmill',
+         descr => 'Check that some important settings are correctly set',
+     },
++        {
++        name => 'fp_screen_dimensions',
++        type  => 'selenium',
++        descr => 'Check that screen dimensions are spoofed correctly',
++    },
++    {
++        name => 'fp_screen_coords',
++        type  => 'selenium',
++        descr => 'Check that screenX, screenY, screenLeft, screenTop, mozInnerScreenX, mozInnerScreenY are 0',
++    },    
++    {
++        name => 'fp_plugins',
++        type  => 'selenium',
++        descr => 'Check that plugins are disabled',
++    },
++    {
++        name => 'fp_useragent',
++        type  => 'selenium',
++        descr => 'Check that userAgent is as expected',
++    },        {
++        name => 'fp_navigator',
++        type  => 'selenium',
++        descr => 'Check that navigator properties are as expected',
++    },
+ );
+ 
+ sub toggle_https_everywhere {
+diff --git a/selenium-tests/test_fp_navigator.py b/selenium-tests/test_fp_navigator.py
+new file mode 100644
+index 0000000..91e04cb
+--- /dev/null
++++ b/selenium-tests/test_fp_navigator.py
+@@ -0,0 +1,76 @@
++#!/usr/bin/python
++import tbbtest
++
++# expected values for navigation properties
++nav_props = {"appCodeName": "Mozilla",
++"appName": "Netscape",
++"appVersion": "5.0 (Windows)",
++"language": "en-US",
++"mimeTypes": "[object MimeTypeArray]",
++"platform": "Win32",
++"oscpu": "Windows NT 6.1",
++"vendor": "",
++"vendorSub": "",
++"product": "Gecko",
++"productSub": "20100101",
++"plugins": "[object PluginArray]",
++"userAgent": "Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/24.0",
++"cookieEnabled": "true",
++"onLine": "true",
++"buildID": "20100101",
++"doNotTrack": "unspecified",
++"mozPower": "null",
++"javaEnabled": """function javaEnabled() {
++    [native code]
++}""",
++"taintEnabled": """function taintEnabled() {
++    [native code]
++}""",
++"vibrate": """function vibrate() {
++    [native code]
++}""",
++"addIdleObserver": """function addIdleObserver() {
++    [native code]
++}""",
++"removeIdleObserver": """function removeIdleObserver() {
++    [native code]
++}""",
++"requestWakeLock": """function requestWakeLock() {
++    [native code]
++}""",
++"getDeviceStorage": """function getDeviceStorage() {
++    [native code]
++}""",
++"getDeviceStorages": """function getDeviceStorages() {
++    [native code]
++}""",
++"geolocation": "null",
++"registerContentHandler": """function registerContentHandler() {
++    [native code]
++}""",
++"registerProtocolHandler": """function registerProtocolHandler() {
++    [native code]
++}""",
++"mozIsLocallyAvailable": """function mozIsLocallyAvailable() {
++    [native code]
++}""",
++"mozSms": "null",
++"mozMobileMessage": "null",
++"mozGetUserMediaDevices": """function mozGetUserMediaDevices() {
++    [native code]
++}""",
++"mozGetUserMedia": """function mozGetUserMedia() {
++    [native code]
++}""",
++"mozCameras": "null", }
++
++
++class Test(tbbtest.TBBTest):
++    def test_navigator(self):
++        driver = self.driver
++        js = driver.execute_script
++        # Check that plugins are disabled
++        for nav_prop, value in nav_props.iteritems():
++            # cast to string on the JS side, otherwise we have issues
++            # that raise from Python/JS type disparity
++            self.assertEqual(value, js("return ''+navigator['%s']" % nav_prop))
+diff --git a/selenium-tests/test_fp_plugins.py b/selenium-tests/test_fp_plugins.py
+new file mode 100644
+index 0000000..55a8b08
+--- /dev/null
++++ b/selenium-tests/test_fp_plugins.py
+@@ -0,0 +1,11 @@
++#!/usr/bin/python
++import tbbtest
++
++
++class Test(tbbtest.TBBTest):
++    def test_plugins(self):
++        driver = self.driver
++        js = driver.execute_script
++        # Check that plugins are disabled
++        self.assertEqual(True, js("return navigator.plugins.length === 0"))
++        self.assertEqual(True, js("return navigator.mimeTypes.length === 0"))
+\ No newline at end of file
+diff --git a/selenium-tests/test_fp_screen_coords.py b/selenium-tests/test_fp_screen_coords.py
+new file mode 100644
+index 0000000..18ef3dc
+--- /dev/null
++++ b/selenium-tests/test_fp_screen_coords.py
+@@ -0,0 +1,21 @@
++#!/usr/bin/python
++import tbbtest
++
++
++class Test(tbbtest.TBBTest):
++    def test_screen_coords(self):
++        # https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/src/current-patches/firefox/0021-Do-not-expose-physical-screen-info.-via-window-and-w.patch
++        driver = self.driver
++        js = driver.execute_script
++        # check that screenX, screenY are 0
++        self.assertEqual(True, js("return screenX === 0"))
++        self.assertEqual(True, js("return screenY === 0"))
++        # check that mozInnerScreenX, mozInnerScreenY are 0
++        self.assertEqual(True, js("return mozInnerScreenX === 0"))
++        self.assertEqual(True, js("return mozInnerScreenY === 0"))
++        # check that screenLeft, screenTop are 0
++        self.assertEqual(True, js("return screen.left === 0"))
++        self.assertEqual(True, js("return screen.top === 0"))
++        # check that availLeft, availTop are 0
++        self.assertEqual(True, js("return screen.availLeft === 0"))
++        self.assertEqual(True, js("return screen.availTop === 0"))
+diff --git a/selenium-tests/test_fp_screen_dimensions.py b/selenium-tests/test_fp_screen_dimensions.py
+new file mode 100644
+index 0000000..04c4c3e
+--- /dev/null
++++ b/selenium-tests/test_fp_screen_dimensions.py
+@@ -0,0 +1,18 @@
++#!/usr/bin/python
++import tbbtest
++
++
++class Test(tbbtest.TBBTest):
++    def test_screen_dims(self):
++        # https://gitweb.torproject.org/torbrowser.git/blob/HEAD:/src/current-patches/firefox/0021-Do-not-expose-physical-screen-info.-via-window-and-w.patch
++        driver = self.driver
++        js = driver.execute_script
++        # check that availWidth and availHeight are equal to window innerWidth and innerHeight
++        self.assertEqual(True, js("return screen.availWidth === window.innerWidth"))
++        self.assertEqual(True, js("return screen.availHeight === window.innerHeight"))
++        # check that screen width and height are equal to availWidth and availHeight
++        self.assertEqual(True, js("return screen.width === screen.availWidth"))
++        self.assertEqual(True, js("return screen.height === screen.availHeight"))
++        # check that innerWidth and innerHeight are equal to outerWidth and outerHeight
++        self.assertEqual(True, js("return window.innerWidth === window.outerWidth"))
++        self.assertEqual(True, js("return window.innerHeight === window.outerHeight"))
+diff --git a/selenium-tests/test_fp_useragent.py b/selenium-tests/test_fp_useragent.py
+new file mode 100644
+index 0000000..ba0ce19
+--- /dev/null
++++ b/selenium-tests/test_fp_useragent.py
+@@ -0,0 +1,12 @@
++#!/usr/bin/python
++import tbbtest
++
++
++class Test(tbbtest.TBBTest):
++    def test_useragent(self):
++        driver = self.driver
++        js = driver.execute_script
++        # Check that useragent string is as expected
++        # We better know the ESR version we're testing
++        self.assertEqual("Mozilla/5.0 (Windows NT 6.1; rv:24.0) Gecko/20100101 Firefox/24.0",
++                         js("return navigator.userAgent"))
+-- 
+1.7.9.5
+
