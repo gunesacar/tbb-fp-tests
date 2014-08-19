@@ -35,4 +35,16 @@ index 5e76780..b270a57 100644
          $test->{start_time} = time;
          $test->{pre}->($tbbinfos, $test) if $test->{pre};
          $test_types->{$test->{type}}->($tbbinfos, $test)
-
+diff --git TBBTestSuite/Tests/TorBootstrap.pm TBBTestSuite/Tests/TorBootstrap.pm
+index df9438b..2cc6b10 100644
+--- TBBTestSuite/Tests/TorBootstrap.pm
++++ TBBTestSuite/Tests/TorBootstrap.pm
+@@ -147,7 +147,7 @@ sub start_tor {
+ 
+ sub stop_tor {
+     my ($tbbinfos, $test) = @_;
+-    return unless $options->{starttor};
++    return unless ($options->{starttor} && $tbbinfos->{torpid});
+     kill 15, $tbbinfos->{torpid};
+     my ($kid, $i) = (0, 5);
+     while ($kid == 0 && $i) {
