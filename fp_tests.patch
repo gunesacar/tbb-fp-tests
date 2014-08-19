@@ -1,5 +1,5 @@
 From d46c1cd2f8b39e26e3c2dd5e6c1bde961b36c575 Mon Sep 17 00:00:00 2001
-From: Gunes Acar <gunes.acar@esat.kuleuven.be>
+From: Gunes Acar
 Date: Fri, 18 Apr 2014 05:11:23 +0200
 Subject: [PATCH] Added fingerprinting tests
 
