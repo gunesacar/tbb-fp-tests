@@ -1,7 +1,19 @@
-diff --git TBBTestSuite/BrowserBundleTests.pm TBBTestSuite/BrowserBundleTests.pm
+From 047a359f3d9d84e81ffcf9aee233f64ee37f15f3 Mon Sep 17 00:00:00 2001
+From: Gunes Acar <gunes.acar@esat.kuleuven.be>
+Date: Wed, 20 Aug 2014 22:43:28 -0700
+Subject: [PATCH] Remove "always" option. Check Tor process id before trying
+ to stop it.
+
+---
+ TBBTestSuite/BrowserBundleTests.pm |    1 -
+ TBBTestSuite/Tests.pm              |    9 ++++-----
+ TBBTestSuite/Tests/TorBootstrap.pm |    2 +-
+ 3 files changed, 5 insertions(+), 7 deletions(-)
+
+diff --git a/TBBTestSuite/BrowserBundleTests.pm b/TBBTestSuite/BrowserBundleTests.pm
 index 24dcd6e..bb8962b 100644
---- TBBTestSuite/BrowserBundleTests.pm
-+++ TBBTestSuite/BrowserBundleTests.pm
+--- a/TBBTestSuite/BrowserBundleTests.pm
++++ b/TBBTestSuite/BrowserBundleTests.pm
 @@ -156,7 +156,6 @@ our @tests = (
          type   => 'tor_bootstrap',
          descr  => 'Check that we can bootstrap tor',
@@ -10,10 +22,10 @@ index 24dcd6e..bb8962b 100644
          use_default_config => 1,
          no_kill => 1,
      },
-diff --git TBBTestSuite/Tests.pm TBBTestSuite/Tests.pm
+diff --git a/TBBTestSuite/Tests.pm b/TBBTestSuite/Tests.pm
 index 5e76780..b270a57 100644
---- TBBTestSuite/Tests.pm
-+++ TBBTestSuite/Tests.pm
+--- a/TBBTestSuite/Tests.pm
++++ b/TBBTestSuite/Tests.pm
 @@ -29,16 +29,15 @@ sub run_tests {
          $test->{fail_type} //= 'error';
      }
@@ -35,10 +47,10 @@ index 5e76780..b270a57 100644
          $test->{start_time} = time;
          $test->{pre}->($tbbinfos, $test) if $test->{pre};
          $test_types->{$test->{type}}->($tbbinfos, $test)
-diff --git TBBTestSuite/Tests/TorBootstrap.pm TBBTestSuite/Tests/TorBootstrap.pm
+diff --git a/TBBTestSuite/Tests/TorBootstrap.pm b/TBBTestSuite/Tests/TorBootstrap.pm
 index df9438b..2cc6b10 100644
---- TBBTestSuite/Tests/TorBootstrap.pm
-+++ TBBTestSuite/Tests/TorBootstrap.pm
+--- a/TBBTestSuite/Tests/TorBootstrap.pm
++++ b/TBBTestSuite/Tests/TorBootstrap.pm
 @@ -147,7 +147,7 @@ sub start_tor {
  
  sub stop_tor {
@@ -48,3 +60,6 @@ index df9438b..2cc6b10 100644
      kill 15, $tbbinfos->{torpid};
      my ($kid, $i) = (0, 5);
      while ($kid == 0 && $i) {
+-- 
+1.7.9.5
+
